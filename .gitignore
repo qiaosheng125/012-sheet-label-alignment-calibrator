@@ -1,0 +1,10 @@
+.next/
+node_modules/
+.vercel/
+coverage/
+test-results/
+verification-artifacts/
+*.log
+.tmp-next-start.pid
+.env
+.env.*

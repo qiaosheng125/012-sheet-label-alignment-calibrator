@@ -1,0 +1,635 @@
+:root {
+  --ink: #202225;
+  --muted: #626b73;
+  --paper: #f6f4ef;
+  --panel: #ffffff;
+  --line: #d8d2c5;
+  --soft: #ece7dc;
+  --grid: #b7ad9b;
+  --green: #1f6f4a;
+  --green-strong: #155338;
+  --blue: #315f82;
+  --red: #a33b33;
+  --amber: #a06a19;
+  --shadow: 0 18px 44px rgba(32, 34, 37, 0.1);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  color: var(--ink);
+  background:
+    linear-gradient(90deg, rgba(32, 34, 37, 0.04) 1px, transparent 1px),
+    linear-gradient(rgba(32, 34, 37, 0.035) 1px, transparent 1px),
+    var(--paper);
+  background-size: 32px 32px;
+  font-family:
+    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+h1,
+h2,
+h3,
+p,
+span,
+strong,
+small,
+li {
+  overflow-wrap: anywhere;
+}
+
+svg {
+  width: 20px;
+  height: 20px;
+  flex: 0 0 auto;
+}
+
+.shell {
+  min-height: 100vh;
+}
+
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  min-height: 64px;
+  border-bottom: 1px solid var(--line);
+  background: rgba(246, 244, 239, 0.92);
+  backdrop-filter: blur(14px);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 0 max(18px, calc((100vw - 1220px) / 2));
+}
+
+.brand,
+.navlinks,
+.trustRow,
+.stepTitle,
+.panelHeader,
+.checklist li,
+.actionRow,
+.inlineControl {
+  display: flex;
+  align-items: center;
+}
+
+.brand {
+  gap: 10px;
+  font-weight: 950;
+}
+
+.brand svg {
+  color: var(--green);
+}
+
+.navlinks {
+  gap: 18px;
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 850;
+}
+
+.workspace {
+  width: min(1220px, calc(100% - 32px));
+  margin: 0 auto;
+  padding: 34px 0 30px;
+}
+
+.intro {
+  display: grid;
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.eyebrow {
+  margin: 0;
+  color: var(--green);
+  font-size: 13px;
+  font-weight: 950;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+h1 {
+  width: min(920px, 100%);
+  margin: 0;
+  font-size: clamp(36px, 6vw, 66px);
+  line-height: 1.12;
+  letter-spacing: 0;
+}
+
+.intro > p:not(.eyebrow) {
+  width: min(780px, 100%);
+  margin: 0;
+  color: var(--muted);
+  font-size: 18px;
+  line-height: 1.55;
+}
+
+.trustRow {
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.trustRow span {
+  min-height: 34px;
+  border: 1px solid #c9ddce;
+  border-radius: 8px;
+  background: #f2fbf2;
+  color: var(--green-strong);
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 0 10px;
+  font-size: 13px;
+  font-weight: 850;
+}
+
+.calibrationDesk {
+  display: grid;
+  grid-template-columns: minmax(340px, 0.95fr) minmax(0, 1.15fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.controlColumn,
+.previewColumn {
+  display: grid;
+  gap: 14px;
+}
+
+.stepBlock,
+.sheetPanel,
+.resultPanel,
+.supportBand {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+  box-shadow: var(--shadow);
+  padding: 18px;
+}
+
+.stepTitle,
+.panelHeader {
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.stepTitle {
+  justify-content: flex-start;
+  align-items: flex-start;
+}
+
+.stepTitle svg,
+.panelHeader svg {
+  color: var(--green);
+}
+
+.stepTitle h2,
+.panelHeader h2,
+.supportBand h2 {
+  margin: 0;
+  line-height: 1.18;
+  letter-spacing: 0;
+}
+
+.stepTitle p,
+.supportBand p,
+.resultPanel > p {
+  margin: 6px 0 0;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.presetGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.presetButton,
+.symptomButton {
+  min-height: 78px;
+  border: 1px solid #d3d0c7;
+  border-radius: 8px;
+  background: #fbfaf7;
+  color: var(--ink);
+  display: grid;
+  gap: 5px;
+  padding: 11px;
+  text-align: left;
+}
+
+.presetButton strong,
+.symptomButton strong {
+  font-size: 14px;
+  line-height: 1.2;
+}
+
+.presetButton span,
+.symptomButton span {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.presetButton.active,
+.symptomButton.active {
+  border-color: #7cb68d;
+  background: #eff8ee;
+  box-shadow: inset 0 0 0 2px rgba(31, 111, 74, 0.12);
+}
+
+.customBlock {
+  background: #fbfaf7;
+}
+
+.inlineControl {
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+  font-weight: 850;
+}
+
+.segmented {
+  min-height: 38px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--soft);
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  padding: 3px;
+}
+
+.segmented button {
+  width: 54px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--muted);
+  font-weight: 900;
+}
+
+.segmented button.active {
+  background: #ffffff;
+  color: var(--green-strong);
+}
+
+.fieldGrid,
+.measurementRow {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+label {
+  display: grid;
+  gap: 6px;
+}
+
+label span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 850;
+}
+
+input {
+  width: 100%;
+  min-height: 42px;
+  border: 1px solid #d1cec4;
+  border-radius: 8px;
+  background: #ffffff;
+  color: var(--ink);
+  padding: 0 10px;
+  font-weight: 800;
+}
+
+input:focus {
+  outline: 3px solid rgba(49, 95, 130, 0.18);
+  border-color: var(--blue);
+}
+
+.symptomList {
+  display: grid;
+  gap: 8px;
+}
+
+.symptomButton {
+  min-height: 60px;
+}
+
+.sheetPanel {
+  padding-bottom: 20px;
+}
+
+.iconButton {
+  width: 42px;
+  height: 42px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #f9f8f4;
+  color: var(--green-strong);
+  display: grid;
+  place-items: center;
+}
+
+.sheetWrap {
+  width: min(520px, 100%);
+  margin: 0 auto;
+  padding: 10px;
+  background: #e8e1d3;
+  border-radius: 8px;
+}
+
+.labelSheet {
+  position: relative;
+  width: 100%;
+  max-height: 680px;
+  border: 2px solid #847764;
+  background:
+    linear-gradient(90deg, rgba(132, 119, 100, 0.15) 1px, transparent 1px),
+    linear-gradient(rgba(132, 119, 100, 0.15) 1px, transparent 1px),
+    #fffdf8;
+  background-size: 16px 16px;
+  overflow: hidden;
+}
+
+.labelCell {
+  position: absolute;
+  border: 1px dashed var(--grid);
+  border-radius: 4px;
+  color: #766c5e;
+  display: grid;
+  place-items: center;
+  font-size: clamp(7px, 1.2vw, 11px);
+  font-weight: 850;
+  background: rgba(255, 255, 255, 0.58);
+}
+
+.errorBox {
+  border: 1px solid #e2b0a9;
+  border-radius: 8px;
+  background: #fff4f2;
+  color: var(--red);
+  padding: 12px;
+  font-weight: 800;
+}
+
+.offsetCards {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin: 16px 0;
+}
+
+.offsetCards div {
+  border: 1px solid #d1decf;
+  border-radius: 8px;
+  background: #f3fbf3;
+  padding: 12px;
+  display: grid;
+  gap: 7px;
+}
+
+.offsetCards span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 850;
+}
+
+.offsetCards strong {
+  color: var(--green-strong);
+  font-size: 20px;
+  line-height: 1.1;
+}
+
+.checklist {
+  display: grid;
+  gap: 8px;
+  padding: 0;
+  margin: 0 0 16px;
+  list-style: none;
+}
+
+.checklist li {
+  align-items: flex-start;
+  gap: 9px;
+  color: var(--muted);
+  line-height: 1.45;
+  font-weight: 700;
+}
+
+.checklist svg {
+  color: var(--green);
+  margin-top: 2px;
+}
+
+.actionRow {
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.primaryButton,
+.secondaryButton {
+  min-height: 44px;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 14px;
+  font-weight: 950;
+}
+
+.primaryButton {
+  border: 1px solid var(--green-strong);
+  background: var(--green);
+  color: #ffffff;
+}
+
+.secondaryButton {
+  border: 1px solid var(--line);
+  background: #f9f8f4;
+  color: var(--ink);
+}
+
+.supportBand {
+  margin-top: 16px;
+  display: grid;
+  grid-template-columns: minmax(280px, 0.7fr) minmax(0, 1.3fr);
+  gap: 18px;
+}
+
+.methodGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.methodGrid div {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fbfaf7;
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+}
+
+.methodGrid strong {
+  color: var(--green-strong);
+}
+
+.methodGrid span {
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.contentShell {
+  min-height: 100vh;
+}
+
+.contentPage {
+  width: min(820px, calc(100% - 32px));
+  margin: 0 auto;
+  padding: 44px 0 70px;
+}
+
+.contentPage h1 {
+  margin: 8px 0 16px;
+  font-size: clamp(34px, 5vw, 58px);
+}
+
+.contentPage > p,
+.contentPage section p {
+  color: var(--muted);
+  font-size: 18px;
+  line-height: 1.65;
+}
+
+.contentPage section {
+  border-top: 1px solid var(--line);
+  margin-top: 28px;
+  padding-top: 24px;
+}
+
+.contentPage h2 {
+  margin: 0 0 10px;
+  font-size: 24px;
+  line-height: 1.2;
+}
+
+.mailButton {
+  min-height: 46px;
+  border: 1px solid var(--green-strong);
+  border-radius: 8px;
+  background: var(--green);
+  color: #ffffff;
+  display: inline-flex;
+  align-items: center;
+  margin-top: 12px;
+  padding: 0 16px;
+  font-weight: 950;
+}
+
+@media (max-width: 900px) {
+  .navlinks {
+    display: none;
+  }
+
+  .calibrationDesk,
+  .supportBand,
+  .methodGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 560px) {
+  .workspace {
+    width: min(100% - 22px, 1220px);
+    padding-top: 24px;
+  }
+
+  .presetGrid,
+  .fieldGrid,
+  .measurementRow,
+  .offsetCards {
+    grid-template-columns: 1fr;
+  }
+
+  .stepBlock,
+  .sheetPanel,
+  .resultPanel,
+  .supportBand {
+    padding: 14px;
+  }
+}
+
+@media print {
+  body {
+    background: #ffffff;
+  }
+
+  .topbar,
+  .intro,
+  .controlColumn,
+  .resultPanel,
+  .supportBand,
+  .iconButton {
+    display: none !important;
+  }
+
+  .workspace,
+  .calibrationDesk,
+  .previewColumn,
+  .sheetPanel,
+  .sheetWrap {
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    box-shadow: none;
+    border: 0;
+    background: #ffffff;
+  }
+
+  .sheetPanel .panelHeader {
+    display: none;
+  }
+
+  .labelSheet {
+    width: 7.5in;
+    margin: 0 auto;
+    border-color: #000000;
+    background: #ffffff;
+  }
+
+  .labelCell {
+    color: #000000;
+    border-color: #000000;
+    background: transparent;
+  }
+}
