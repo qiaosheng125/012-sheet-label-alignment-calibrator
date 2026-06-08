@@ -36,7 +36,7 @@ The 012 Round2 opportunity review found repeated external pain around label shee
 - core_dependency: none beyond React and lucide-react
 - sample_gate: pass, 5/5 core samples and 1/1 guardrail accepted
 - vercel_project_id: prj_aZA7e3DGAM8ySL7UxpSchNp2hHmP
-- github_repo: pending
+- github_repo: https://github.com/qiaosheng125/012-sheet-label-alignment-calibrator
 
 ## Source Evidence
 
