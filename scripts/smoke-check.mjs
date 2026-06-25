@@ -3,16 +3,10 @@ import dns from "node:dns";
 dns.setDefaultResultOrder("ipv4first");
 
 const baseUrl = process.env.BASE_URL || "http://127.0.0.1:3000";
-const baseHost = new URL(baseUrl).hostname;
-const browserOnly = !["127.0.0.1", "localhost"].includes(baseHost);
 const requestTimeoutMs = Number(process.env.SMOKE_TIMEOUT_MS || 30000);
 const maxAttempts = Number(process.env.SMOKE_ATTEMPTS || 3);
 
 async function fetchWithRetry(url) {
-  if (browserOnly) {
-    return fetchWithBrowser(url);
-  }
-
   let lastError;
   for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
     try {
@@ -62,13 +56,21 @@ async function assertOk(path, expectedText) {
 async function main() {
   const homepage = await assertOk("/", "Label Alignment Tool");
   const checks = [
-    "Measure label alignment before wasting sticker stock.",
+    "Fix labels not lining up before you waste sticker sheets.",
+    "printable label layout",
     "No file upload",
+    "Print grid",
+    "Print calibration grid",
+    "Measure drift",
+    "Right and down are positive",
+    "Example drift values are prefilled",
+    "+X right",
     "30-up address",
     "2 in round",
     "Rows drift down",
     "Copy checklist",
-    "Private by design"
+    "Private by design",
+    "Daycare labels"
   ];
 
   for (const check of checks) {
@@ -78,6 +80,32 @@ async function main() {
   }
 
   await assertOk("/about", "About Label Alignment Tool");
+  const barcodePage = await assertOk("/barcode-print-check", "Check barcode label size before you print a batch.");
+  for (const check of [
+    "Barcode label print check",
+    "quiet-zone",
+    "X-dimension",
+    "203 DPI risk",
+    "Copy checklist",
+    "Not a verifier"
+  ]) {
+    if (!barcodePage.includes(check)) {
+      throw new Error(`/barcode-print-check missing: ${check}`);
+    }
+  }
+  const daycarePage = await assertOk("/daycare-bottle-labels", "Plan printable bottle labels and a drop-off checklist.");
+  for (const check of [
+    "Daycare bottle labels",
+    "No child name",
+    "Food containers",
+    "Backup labels",
+    "Missing fields",
+    "not daycare compliance advice"
+  ]) {
+    if (!daycarePage.includes(check)) {
+      throw new Error(`/daycare-bottle-labels missing: ${check}`);
+    }
+  }
   await assertOk("/privacy", "Browser-local label calibration");
   await assertOk("/contact", "Send sanitized label alignment feedback");
   const robots = await assertOk("/robots.txt", "Allow: /");
@@ -87,7 +115,10 @@ async function main() {
   if (!robots.includes("Sitemap:")) {
     throw new Error("robots.txt missing Sitemap");
   }
-  await assertOk("/sitemap.xml", "<loc>");
+  const sitemap = await assertOk("/sitemap.xml", "<loc>");
+  if (!sitemap.includes("/daycare-bottle-labels")) {
+    throw new Error("sitemap.xml missing daycare bottle labels route");
+  }
 
   console.log("Smoke check passed");
 }

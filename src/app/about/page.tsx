@@ -22,6 +22,7 @@ export default function AboutPage() {
         </a>
         <div className="navlinks">
           <a href="/">Calibrator</a>
+          <a href="/barcode-print-check">Barcode check</a>
           <a href="/privacy">Privacy</a>
           <a href="/contact">Contact</a>
         </div>
@@ -47,6 +48,14 @@ export default function AboutPage() {
             It cannot guarantee a printer, driver, sheet brand, or tray will behave perfectly. The safest
             workflow is to print the grid at 100% or Actual size, compare it against the label sheet, then
             make one small setting change at a time.
+          </p>
+        </section>
+        <section>
+          <h2>Barcode label checks</h2>
+          <p>
+            The barcode print check module covers a narrower label-printing problem: whether a barcode
+            label has enough quiet zone, printed dots, and label width before a batch print. It does not
+            replace barcode verification or certification.
           </p>
         </section>
       </article>

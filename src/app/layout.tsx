@@ -6,27 +6,27 @@ import "./globals.css";
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: "Label Alignment Tool",
-    template: "%s | Label Alignment Tool"
+    default: "Label Print Alignment Tool",
+    template: "%s | Label Print Alignment Tool"
   },
   description:
-    "Generate a printable label alignment grid, diagnose sheet drift, and calculate safe printer offset checks before wasting label stock.",
+    "Fix labels not lining up before you waste sticker sheets. Generate a printable label alignment grid, diagnose sheet drift, and calculate safe printer offset checks.",
   robots: {
     index: true,
     follow: true
   },
   openGraph: {
-    title: "Label Alignment Tool",
+    title: "Label Print Alignment Tool",
     description:
-      "A browser-local calibration bench for label sheet alignment, offset nudges, row drift, clipped edges, and label-stock print checks.",
+      "A browser-local calibration bench for label print alignment, offset nudges, row drift, clipped edges, and label-stock print checks.",
     url: siteUrl,
     siteName,
     type: "website"
   },
   twitter: {
     card: "summary",
-    title: "Label Alignment Tool",
-    description: "Print a calibration grid and calculate the next label alignment test."
+    title: "Label Print Alignment Tool",
+    description: "Print a label alignment grid and calculate the next print alignment test."
   }
 };
 

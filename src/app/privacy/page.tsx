@@ -22,6 +22,7 @@ export default function PrivacyPage() {
         </a>
         <div className="navlinks">
           <a href="/">Calibrator</a>
+          <a href="/barcode-print-check">Barcode check</a>
           <a href="/about">About</a>
           <a href="/contact">Contact</a>
         </div>
@@ -40,6 +41,14 @@ export default function PrivacyPage() {
             If analytics are enabled, events use safe buckets such as selected preset, symptom type,
             result type, unit, and whether a custom sheet was used. Raw dimensions, copied checklist
             text, artwork, and contact messages are not sent through analytics events.
+          </p>
+        </section>
+        <section>
+          <h2>Barcode check data</h2>
+          <p>
+            The barcode print check runs from local numeric inputs such as label width, quiet zone,
+            X-dimension, and printer DPI. Raw dimensions and copied checklists are not sent through
+            analytics events.
           </p>
         </section>
         <section>

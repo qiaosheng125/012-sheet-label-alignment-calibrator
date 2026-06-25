@@ -4,15 +4,10 @@ dns.setDefaultResultOrder("ipv4first");
 
 const baseUrl = process.env.BASE_URL || "http://127.0.0.1:3000";
 const canonicalBaseUrl = process.env.CANONICAL_BASE_URL || "https://labelalignmenttool.com";
-const baseHost = new URL(baseUrl).hostname;
-const browserOnly = !["127.0.0.1", "localhost"].includes(baseHost);
 const requestTimeoutMs = Number(process.env.SEO_PREFLIGHT_TIMEOUT_MS || 30000);
 
 async function fetchPage(path) {
   const url = `${baseUrl}${path}`;
-  if (browserOnly) {
-    return fetchWithBrowser(url);
-  }
   try {
     const response = await fetch(url, { signal: AbortSignal.timeout(requestTimeoutMs) });
     return {
@@ -73,6 +68,8 @@ function normalizeUrl(url) {
 async function main() {
   const pages = [
     { path: "/", canonical: `${canonicalBaseUrl}/` },
+    { path: "/barcode-print-check", canonical: `${canonicalBaseUrl}/barcode-print-check` },
+    { path: "/daycare-bottle-labels", canonical: `${canonicalBaseUrl}/daycare-bottle-labels` },
     { path: "/about", canonical: `${canonicalBaseUrl}/about` },
     { path: "/privacy", canonical: `${canonicalBaseUrl}/privacy` },
     { path: "/contact", canonical: `${canonicalBaseUrl}/contact` }
@@ -114,6 +111,14 @@ async function main() {
   const sitemapResponse = await fetchPage("/sitemap.xml");
   assert(sitemapResponse.ok, "sitemap.xml missing");
   assert(sitemapResponse.text.includes(`${canonicalBaseUrl}/`), "sitemap.xml missing homepage canonical");
+  assert(
+    sitemapResponse.text.includes(`${canonicalBaseUrl}/barcode-print-check`),
+    "sitemap.xml missing barcode print check canonical"
+  );
+  assert(
+    sitemapResponse.text.includes(`${canonicalBaseUrl}/daycare-bottle-labels`),
+    "sitemap.xml missing daycare bottle labels canonical"
+  );
 
   console.log("SEO preflight passed");
 }

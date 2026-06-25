@@ -8,7 +8,8 @@
     "start": "node node_modules/next/dist/bin/next start",
     "smoke": "node scripts/smoke-check.mjs",
     "seo-preflight": "node scripts/seo-preflight.mjs",
-    "privacy-smoke": "node scripts/privacy-smoke.mjs"
+    "privacy-smoke": "node scripts/privacy-smoke.mjs",
+    "test:daycare": "node --experimental-strip-types scripts/test-daycare-labels.mjs"
   },
   "dependencies": {
     "lucide-react": "^1.17.0",

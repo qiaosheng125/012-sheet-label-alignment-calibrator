@@ -50,6 +50,17 @@ export type Diagnosis = {
 };
 
 export const MM_PER_IN = 25.4;
+const MAX_ROWS = 60;
+const MAX_COLUMNS = 20;
+const MAX_CELLS = 600;
+const fieldLabels: Partial<Record<keyof SheetGeometry, string>> = {
+  labelWidthMm: "Label width",
+  labelHeightMm: "Label height",
+  marginLeftMm: "Left margin",
+  marginTopMm: "Top margin",
+  gapHorizontalMm: "Column gap",
+  gapVerticalMm: "Row gap",
+};
 
 export function toMm(value: number, unit: Unit) {
   return unit === "in" ? value * MM_PER_IN : value;
@@ -108,21 +119,33 @@ export function validateGeometry(sheet: SheetGeometry) {
   }
   if (!Number.isInteger(sheet.rows) || sheet.rows <= 0) {
     errors.push("Rows must be a positive whole number.");
+  } else if (sheet.rows > MAX_ROWS) {
+    errors.push(`Rows must be ${MAX_ROWS} or fewer.`);
   }
   if (!Number.isInteger(sheet.columns) || sheet.columns <= 0) {
     errors.push("Columns must be a positive whole number.");
+  } else if (sheet.columns > MAX_COLUMNS) {
+    errors.push(`Columns must be ${MAX_COLUMNS} or fewer.`);
   }
-  const numericFields: Array<keyof SheetGeometry> = [
-    "labelWidthMm",
-    "labelHeightMm",
-    "marginLeftMm",
-    "marginTopMm",
-    "gapHorizontalMm",
-    "gapVerticalMm",
-  ];
+  if (
+    Number.isInteger(sheet.rows) &&
+    Number.isInteger(sheet.columns) &&
+    sheet.rows > 0 &&
+    sheet.columns > 0 &&
+    sheet.rows * sheet.columns > MAX_CELLS
+  ) {
+    errors.push(`Total labels must be ${MAX_CELLS} or fewer.`);
+  }
+  const positiveFields: Array<keyof SheetGeometry> = ["labelWidthMm", "labelHeightMm"];
+  for (const field of positiveFields) {
+    if (!Number.isFinite(sheet[field]) || sheet[field] <= 0) {
+      errors.push(`${fieldLabels[field]} must be positive.`);
+    }
+  }
+  const numericFields: Array<keyof SheetGeometry> = ["marginLeftMm", "marginTopMm", "gapHorizontalMm", "gapVerticalMm"];
   for (const field of numericFields) {
     if (!Number.isFinite(sheet[field]) || sheet[field] < 0) {
-      errors.push(`${field} must be zero or positive.`);
+      errors.push(`${fieldLabels[field]} must be zero or positive.`);
     }
   }
 

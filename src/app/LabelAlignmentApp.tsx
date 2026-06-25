@@ -87,6 +87,7 @@ export default function LabelAlignmentApp() {
   const [preset, setPreset] = useState<SheetPresetId>("30up-address");
   const [unit, setUnit] = useState<Unit>("in");
   const [symptom, setSymptom] = useState<SymptomType>("global_shift");
+  const [isReady, setIsReady] = useState(false);
   const [shiftX, setShiftX] = useState("0.06");
   const [shiftY, setShiftY] = useState("-0.08");
   const [custom, setCustom] = useState({
@@ -101,15 +102,15 @@ export default function LabelAlignmentApp() {
     gapHorizontal: fromMm(customStart.gapHorizontalMm, "in").toFixed(3),
     gapVertical: fromMm(customStart.gapVerticalMm, "in").toFixed(3),
   });
-  const [copied, setCopied] = useState(false);
+  const [copyStatus, setCopyStatus] = useState<"idle" | "copied" | "failed">("idle");
 
   const sheet: SheetGeometry = useMemo(() => {
     if (preset !== "custom") return presets[preset];
     return {
       pageWidthMm: toMm(numberOrZero(custom.pageWidth), unit),
       pageHeightMm: toMm(numberOrZero(custom.pageHeight), unit),
-      rows: Math.round(numberOrZero(custom.rows)),
-      columns: Math.round(numberOrZero(custom.columns)),
+      rows: numberOrZero(custom.rows),
+      columns: numberOrZero(custom.columns),
       labelWidthMm: toMm(numberOrZero(custom.labelWidth), unit),
       labelHeightMm: toMm(numberOrZero(custom.labelHeight), unit),
       marginLeftMm: toMm(numberOrZero(custom.marginLeft), unit),
@@ -132,6 +133,10 @@ export default function LabelAlignmentApp() {
   const shiftYmm = toMm(numberOrZero(shiftY), unit);
   const diagnosis = diagnose(symptom, shiftXmm, shiftYmm);
   const presetLabel = presetOptions.find((item) => item.id === preset)?.label || "Custom";
+
+  useEffect(() => {
+    setIsReady(true);
+  }, []);
 
   useEffect(() => {
     trackSafeEvent("calibration_generated", {
@@ -170,6 +175,12 @@ export default function LabelAlignmentApp() {
 
   function selectPreset(nextPreset: SheetPresetId) {
     setPreset(nextPreset);
+    trackSafeEvent("core_submit", {
+      preset: nextPreset,
+      custom_sheet_used: nextPreset === "custom",
+      symptom_type: symptom,
+      unit,
+    });
     trackSafeEvent("preset_selected", {
       preset: nextPreset,
       custom_sheet_used: nextPreset === "custom",
@@ -181,6 +192,12 @@ export default function LabelAlignmentApp() {
 
   function selectSymptom(nextSymptom: SymptomType) {
     setSymptom(nextSymptom);
+    trackSafeEvent("core_submit", {
+      preset,
+      custom_sheet_used: preset === "custom",
+      symptom_type: nextSymptom,
+      unit,
+    });
     trackSafeEvent("symptom_selected", { symptom_type: nextSymptom });
   }
 
@@ -207,32 +224,61 @@ export default function LabelAlignmentApp() {
   }
 
   async function copyReport() {
+    let didCopy = false;
     if (navigator.clipboard?.writeText) {
       try {
         await navigator.clipboard.writeText(report);
+        didCopy = true;
       } catch {
         trackSafeEvent("core_error", { error_type: "clipboard_permission" });
       }
     }
-    setCopied(true);
-    trackSafeEvent("copy_checklist", {
+    if (!didCopy) {
+      const fallback = document.createElement("textarea");
+      fallback.value = report;
+      fallback.setAttribute("readonly", "true");
+      fallback.style.position = "fixed";
+      fallback.style.left = "-9999px";
+      document.body.appendChild(fallback);
+      fallback.select();
+      try {
+        didCopy = document.execCommand("copy");
+      } catch {
+        didCopy = false;
+      } finally {
+        document.body.removeChild(fallback);
+      }
+    }
+    if (!didCopy) {
+      setCopyStatus("failed");
+      window.setTimeout(() => setCopyStatus("idle"), 2000);
+      return;
+    }
+    setCopyStatus("copied");
+    const eventParams = {
       preset,
       custom_sheet_used: preset === "custom",
       symptom_type: symptom,
       result_type: diagnosis.resultType,
       has_offset: diagnosis.offsetXAdviceMm !== null,
       unit,
-    });
-    window.setTimeout(() => setCopied(false), 1600);
+    };
+    trackSafeEvent("copy_report", eventParams);
+    trackSafeEvent("copy_checklist", eventParams);
+    trackSafeEvent("core_success", eventParams);
+    window.setTimeout(() => setCopyStatus("idle"), 1600);
   }
 
   function printGrid() {
-    trackSafeEvent("download_or_print_grid", {
+    const eventParams = {
       preset,
       custom_sheet_used: preset === "custom",
       symptom_type: symptom,
       result_type: diagnosis.resultType,
-    });
+    };
+    trackSafeEvent("download_report", eventParams);
+    trackSafeEvent("download_or_print_grid", eventParams);
+    trackSafeEvent("core_success", eventParams);
     window.print();
   }
 
@@ -245,6 +291,8 @@ export default function LabelAlignmentApp() {
         </a>
         <div className="navlinks">
           <a href="#calibrator">Calibrator</a>
+          <a href="/barcode-print-check">Barcode check</a>
+          <a href="/daycare-bottle-labels">Daycare labels</a>
           <a href="/about">About</a>
           <a href="/privacy">Privacy</a>
           <a href="/contact">Contact</a>
@@ -254,9 +302,9 @@ export default function LabelAlignmentApp() {
       <section className="workspace" id="calibrator">
         <div className="intro">
           <p className="eyebrow">Printable sheet calibration</p>
-          <h1>Measure label alignment before wasting sticker stock.</h1>
+          <h1>Fix labels not lining up before you waste sticker sheets.</h1>
           <p>
-            Pick a sheet, print a plain-paper grid, enter the drift you see, and get the
+            Pick a label sheet, print a plain-paper alignment grid, enter the drift you see, and get the
             next offset or print-setting test without uploading artwork.
           </p>
           <div className="trustRow" aria-label="Safety notes">
@@ -264,16 +312,47 @@ export default function LabelAlignmentApp() {
             <span><Printer aria-hidden="true" /> Plain-paper test first</span>
             <span><Ruler aria-hidden="true" /> Inch and mm support</span>
           </div>
+          <ol className="quickWorkflow" aria-label="How to use Label Alignment Tool">
+            <li>
+              <strong>Print grid</strong>
+              <span>Use plain paper at 100% / Actual size.</span>
+            </li>
+            <li>
+              <strong>Overlay sheet</strong>
+              <span>Hold it behind your label stock or compare against the sheet edge.</span>
+            </li>
+            <li>
+              <strong>Measure drift</strong>
+              <span>X is left/right. Y is up/down. Right and down are positive.</span>
+            </li>
+            <li>
+              <strong>Run next test</strong>
+              <span>Apply the nudge or setting checklist before using sticker stock.</span>
+            </li>
+          </ol>
+          <div className="heroActionRow">
+            <button className="primaryButton" type="button" disabled={!isReady} onClick={printGrid}>
+              <Printer aria-hidden="true" />
+              Print calibration grid
+            </button>
+            <a className="secondaryButton" href="/barcode-print-check">
+              Barcode print check
+            </a>
+            <a className="secondaryButton" href="/daycare-bottle-labels">
+              Daycare labels
+            </a>
+            <span>Start with plain paper so your label sheets stay unused until the test looks right.</span>
+          </div>
         </div>
 
         <div className="calibrationDesk">
-          <section className="controlColumn" aria-label="Calibration controls">
+          <section className="controlColumn" aria-label="Calibration controls" aria-busy={!isReady}>
             <div className="stepBlock">
               <div className="stepTitle">
                 <Settings2 aria-hidden="true" />
-                <div>
-                  <h2>1. Choose the sheet</h2>
-                  <p>Start with a common layout or enter your own geometry.</p>
+              <div>
+                  <h2>1. Choose a label sheet preset</h2>
+                  <p>Start with a common printable label layout or enter your own geometry.</p>
                 </div>
               </div>
               <div className="presetGrid">
@@ -282,6 +361,7 @@ export default function LabelAlignmentApp() {
                     className={preset === option.id ? "presetButton active" : "presetButton"}
                     key={option.id}
                     type="button"
+                    disabled={!isReady}
                     onClick={() => selectPreset(option.id)}
                   >
                     <strong>{option.label}</strong>
@@ -301,6 +381,7 @@ export default function LabelAlignmentApp() {
                         key={nextUnit}
                         className={unit === nextUnit ? "active" : ""}
                         type="button"
+                        disabled={!isReady}
                         onClick={() => changeUnit(nextUnit)}
                       >
                         {nextUnit}
@@ -326,6 +407,7 @@ export default function LabelAlignmentApp() {
                       <input
                         value={custom[key as keyof typeof custom]}
                         inputMode="decimal"
+                        disabled={!isReady}
                         onChange={(event) =>
                           setCustom((current) => ({
                             ...current,
@@ -353,6 +435,7 @@ export default function LabelAlignmentApp() {
                     className={symptom === item.id ? "symptomButton active" : "symptomButton"}
                     key={item.id}
                     type="button"
+                    disabled={!isReady}
                     onClick={() => selectSymptom(item.id)}
                   >
                     <strong>{item.label}</strong>
@@ -367,19 +450,26 @@ export default function LabelAlignmentApp() {
                 <Ruler aria-hidden="true" />
                 <div>
                   <h2>3. Enter measured drift</h2>
-                  <p>Use positive numbers for right/down and negative for left/up.</p>
+                  <p>Measure how far the printed grid misses the label position. Right/down are positive; left/up are negative.</p>
                 </div>
+              </div>
+              <div className="axisGuide" aria-label="Drift direction guide">
+                <span>-X left</span>
+                <span>+X right</span>
+                <span>-Y up</span>
+                <span>+Y down</span>
               </div>
               <div className="measurementRow">
                 <label>
                   <span>X drift ({unit})</span>
-                  <input value={shiftX} inputMode="decimal" onChange={(event) => setShiftX(event.target.value)} />
+                  <input value={shiftX} inputMode="decimal" disabled={!isReady} onChange={(event) => setShiftX(event.target.value)} />
                 </label>
                 <label>
                   <span>Y drift ({unit})</span>
-                  <input value={shiftY} inputMode="decimal" onChange={(event) => setShiftY(event.target.value)} />
+                  <input value={shiftY} inputMode="decimal" disabled={!isReady} onChange={(event) => setShiftY(event.target.value)} />
                 </label>
               </div>
+              <p className="fieldHint">Example drift values are prefilled. Replace them with your own measurement after printing.</p>
             </div>
           </section>
 
@@ -390,7 +480,7 @@ export default function LabelAlignmentApp() {
                   <p className="eyebrow">Calibration sheet</p>
                   <h2>{presetLabel}</h2>
                 </div>
-                <button className="iconButton" type="button" onClick={printGrid} title="Print calibration grid">
+                <button className="iconButton" type="button" disabled={!isReady} onClick={printGrid} title="Print calibration grid">
                   <Printer aria-hidden="true" />
                 </button>
               </div>
@@ -467,11 +557,11 @@ export default function LabelAlignmentApp() {
               </ul>
 
               <div className="actionRow">
-                <button className="primaryButton" type="button" onClick={copyReport}>
+                <button className="primaryButton" type="button" disabled={!isReady} onClick={copyReport}>
                   <ClipboardCopy aria-hidden="true" />
-                  {copied ? "Copied" : "Copy checklist"}
+                  {copyStatus === "copied" ? "Checklist copied" : copyStatus === "failed" ? "Copy failed" : "Copy checklist"}
                 </button>
-                <button className="secondaryButton" type="button" onClick={printGrid}>
+                <button className="secondaryButton" type="button" disabled={!isReady} onClick={printGrid}>
                   <Printer aria-hidden="true" />
                   Print grid
                 </button>
@@ -492,6 +582,14 @@ export default function LabelAlignmentApp() {
             <div>
               <strong>Good for</strong>
               <span>Global shift, round label drift, row drift, clipped edges, label-stock feed surprises.</span>
+            </div>
+            <div>
+              <strong>Barcode labels</strong>
+              <span>Use the barcode print check when scan failures may come from quiet zone, DPI, or barcode width.</span>
+            </div>
+            <div>
+              <strong>Daycare labels</strong>
+              <span>Plan bottle, cup, food container, clothing, and backup labels without entering child data.</span>
             </div>
             <div>
               <strong>Not a guarantee</strong>

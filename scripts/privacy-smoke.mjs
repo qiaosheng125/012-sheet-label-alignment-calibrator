@@ -7,13 +7,17 @@ const allowedHosts = new Set([
   new URL(baseUrl).hostname,
   "www.googletagmanager.com",
   "www.google-analytics.com",
+  "www.google.com",
   "region1.google-analytics.com",
   "analytics.google.com",
   "www.clarity.ms",
   "clarity.ms",
   "c.clarity.ms",
+  "t.clarity.ms",
+  "l.clarity.ms",
   "scripts.clarity.ms",
   "n.clarity.ms",
+  "j.clarity.ms",
   "c.bing.com"
 ]);
 
@@ -25,12 +29,18 @@ const bannedTokens = [
   "pageWidthMm",
   "labelWidthMm",
   "marginLeftMm",
+  "child name",
+  "allergy",
+  "medication",
   "Original placeholder design"
 ];
 
 async function main() {
   const browser = await chromium.launch();
-  const page = await browser.newPage();
+  const context = await browser.newContext({
+    permissions: ["clipboard-write"],
+  });
+  const page = await context.newPage();
   const requests = [];
   const leaks = [];
 
@@ -50,10 +60,16 @@ async function main() {
     }
   });
 
-  await page.goto(baseUrl, { waitUntil: "networkidle" });
+  await page.goto(baseUrl, { waitUntil: "domcontentloaded", timeout: 30000 });
+  await page.locator("body").waitFor({ timeout: 10000 });
+  await page.getByRole("button", { name: /2 in round/i }).waitFor({ timeout: 10000 });
   await page.getByRole("button", { name: /2 in round/i }).click();
+  await page.getByRole("button", { name: /rows drift down/i }).waitFor({ timeout: 10000 });
   await page.getByRole("button", { name: /rows drift down/i }).click();
-  await page.getByText("Progressive drift is usually not a one-nudge problem.").waitFor({ timeout: 10000 });
+  await page
+    .locator(".resultPanel")
+    .getByRole("heading", { name: /Progressive drift is usually not a one-nudge problem/i })
+    .waitFor({ timeout: 15000 });
   await page.getByRole("button", { name: /copy checklist/i }).click();
   await page.getByText("Copied").waitFor({ timeout: 5000 });
 
@@ -63,6 +79,42 @@ async function main() {
   }
   if (!bodyText.includes("Progressive drift is usually not a one-nudge problem.")) {
     leaks.push("missing_report");
+  }
+
+  await page.goto(`${baseUrl}/barcode-print-check`, { waitUntil: "networkidle", timeout: 30000 });
+  await page.locator("body").waitFor({ timeout: 10000 });
+  await page.getByRole("button", { name: /Retail pass/i }).click();
+  await page
+    .locator(".barcodeResultPanel")
+    .getByRole("heading", { name: /Looks ready for a one-label scan test/i })
+    .waitFor({ timeout: 10000 });
+  await page.getByRole("button", { name: /Copy checklist/i }).click();
+  await page.getByText("Checklist copied").waitFor({ timeout: 5000 });
+
+  const barcodeBodyText = await page.locator("body").innerText();
+  if (!barcodeBodyText.includes("No barcode image upload")) {
+    leaks.push("missing_barcode_privacy_copy");
+  }
+  if (!barcodeBodyText.includes("Retailer compliance and ISO grading require a hardware barcode verifier.")) {
+    leaks.push("missing_barcode_scope_boundary");
+  }
+
+  await page.goto(`${baseUrl}/daycare-bottle-labels`, { waitUntil: "networkidle", timeout: 30000 });
+  await page.locator("body").waitFor({ timeout: 10000 });
+  await page.getByRole("button", { name: /Missing fields/i }).click();
+  await page
+    .locator(".daycareResultPanel")
+    .getByRole("heading", { name: /Fix the missing label fields before printing/i })
+    .waitFor({ timeout: 10000 });
+  await page.getByRole("button", { name: /Copy checklist/i }).click();
+  await page.getByText("Checklist copied").waitFor({ timeout: 5000 });
+
+  const daycareBodyText = await page.locator("body").innerText();
+  if (!daycareBodyText.includes("Do not enter a real child name")) {
+    leaks.push("missing_daycare_privacy_copy");
+  }
+  if (!daycareBodyText.includes("not daycare compliance advice")) {
+    leaks.push("missing_daycare_scope_boundary");
   }
 
   const storageLeak = await page.evaluate((tokens) => {
@@ -82,6 +134,7 @@ async function main() {
     leaks.push(`storage_token:${storageLeak}`);
   }
 
+  await context.close();
   await browser.close();
 
   if (leaks.length > 0) {

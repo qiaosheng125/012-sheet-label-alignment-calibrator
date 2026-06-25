@@ -23,6 +23,7 @@ export default function ContactPage() {
         </a>
         <div className="navlinks">
           <a href="/">Calibrator</a>
+          <a href="/barcode-print-check">Barcode check</a>
           <a href="/about">About</a>
           <a href="/privacy">Privacy</a>
         </div>
