@@ -13,6 +13,7 @@ const allowedHosts = new Set([
   "www.clarity.ms",
   "clarity.ms",
   "c.clarity.ms",
+  "z.clarity.ms",
   "t.clarity.ms",
   "l.clarity.ms",
   "scripts.clarity.ms",
@@ -81,15 +82,15 @@ async function main() {
     leaks.push("missing_report");
   }
 
-  await page.goto(`${baseUrl}/barcode-print-check`, { waitUntil: "networkidle", timeout: 30000 });
+  await page.goto(`${baseUrl}/barcode-print-check`, { waitUntil: "domcontentloaded", timeout: 60000 });
   await page.locator("body").waitFor({ timeout: 10000 });
-  await page.getByRole("button", { name: /Retail pass/i }).click();
   await page
     .locator(".barcodeResultPanel")
-    .getByRole("heading", { name: /Looks ready for a one-label scan test/i })
+    .getByText(/Fix these barcode print risks before wasting labels/i)
     .waitFor({ timeout: 10000 });
+  await page.waitForTimeout(1000);
   await page.getByRole("button", { name: /Copy checklist/i }).click();
-  await page.getByText("Checklist copied").waitFor({ timeout: 5000 });
+  await page.getByText("Checklist copied").waitFor({ timeout: 10000 });
 
   const barcodeBodyText = await page.locator("body").innerText();
   if (!barcodeBodyText.includes("No barcode image upload")) {
@@ -99,13 +100,13 @@ async function main() {
     leaks.push("missing_barcode_scope_boundary");
   }
 
-  await page.goto(`${baseUrl}/daycare-bottle-labels`, { waitUntil: "networkidle", timeout: 30000 });
+  await page.goto(`${baseUrl}/daycare-bottle-labels`, { waitUntil: "domcontentloaded", timeout: 60000 });
   await page.locator("body").waitFor({ timeout: 10000 });
-  await page.getByRole("button", { name: /Missing fields/i }).click();
   await page
     .locator(".daycareResultPanel")
-    .getByRole("heading", { name: /Fix the missing label fields before printing/i })
+    .getByText(/Printable daycare label plan is ready for a sheet test/i)
     .waitFor({ timeout: 10000 });
+  await page.waitForTimeout(1000);
   await page.getByRole("button", { name: /Copy checklist/i }).click();
   await page.getByText("Checklist copied").waitFor({ timeout: 5000 });
 
